@@ -1,17 +1,25 @@
 function transformKebabCaseToCamelCase(data) {
-  const transformedObject = JSON.parse(data, reviver);
+  const transformedObject = {};
+  const object = JSON.parse(data);
+
+  for (const property in object) {
+    transformedObject[toCamel(property)] = convertNestedValues(
+      object[property]
+    );
+    delete object[property];
+  }
+
   return JSON.stringify(transformedObject);
 }
 
-function reviver(key, value) {
-  const object = {};
-
-  if (key) {
-    key = toCamel(key);
-    console.log(key, value);
-    object[key] = value;
-    return object;
-  }
+function convertNestedValues(value) {
+  if (typeof value === "object") {
+    const convertedObj = {};
+    for (const property in value) {
+      convertedObj[toCamel(property)] = convertNestedValues(value[property]);
+    }
+    return convertedObj;
+  } else return value;
 }
 
 function toCamel(s) {
@@ -33,7 +41,10 @@ const exampleJson = `{
   "last-name": "Green",
   "address": {
     "city-and-state": "Boston, MA",
-    "zip": "12345-1234"
+    "zip": "12345-1234",
+    "absurdities": {
+      "level-of-nesting": 3
+    }
   },
   "pets": {
     "pet-name": "Bruno",
